@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
-use App\Exceptions\ActiveSessionAlreadyExistsException;
-use App\Exceptions\CurrentSessionNotFoundException;
 use App\Models\LearningSession;
+use Exception;
+use Illuminate\Support\Facades\DB;
 use App\Enums\LearningSessionStatus;
+use App\Exceptions\CurrentSessionNotFoundException;
+use App\Exceptions\ActiveSessionAlreadyExistsException;
 
 class LearningSessionService
 {
@@ -17,7 +19,7 @@ class LearningSessionService
     {
         return LearningSession::query()
             ->where('user_id', auth()->user()->id)
-            ->where('status', LearningSessionStatus::ACTIVE->value)
+            ->where('status', LearningSessionStatus::STARTED->value)
             ->latest()
             ->first();
     }
@@ -33,13 +35,38 @@ class LearningSessionService
             throw new ActiveSessionAlreadyExistsException();
         }
 
-        return LearningSession::create([
+        $learningSession = LearningSession::create([
+            'user_id' => auth()->user()->id,
             'learning_id' => $data['learningId'],
             'name' => $data['name'] ?? null,
-            'started_at' => now(),
-            'status' => LearningSessionStatus::ACTIVE->value,
-            'note' => $data['note'] ?? null
+            'note' => $data['note'] ?? null,
+            'status' => LearningSessionStatus::STARTED->value
         ]);
+
+        return $learningSession;
+    }
+
+    public function runLearningSession(int $id)
+    {
+        DB::transaction(function () use ($id) {
+            if (auth()->user()->runningLearningSession()) {
+                throw new Exception('You already have a running learning session');
+            }
+
+            $learningSession = LearningSession::findOrFail($id);
+
+            $learningSession->state('started')->resume();
+
+            $this->learningSessionLogService->runLearningSessionLog($learningSession);
+        });
+    }
+
+
+    public function resumeLearningSession(int $id)
+    {
+        $learningSession = LearningSession::findOrFail($id);
+
+        $learningSession->state('paused')->resume();
     }
 
     public function pauseLearningSession(LearningSession $learningSession)

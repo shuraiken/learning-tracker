@@ -20,6 +20,10 @@ export const useSessionTimerStore = defineStore('SessionTimer', () => {
         activeSession.value = response.data;
     };
 
+    const runActiveSession = async () => {
+        await axios.put(`/api/learning-sessions/${activeSession.value?.id}/run`);
+    };
+
     const pauseActiveSession = async (learningSessionId: number) => {
         await axios.put(`/api/learning-sessions/${learningSessionId}/pause`);
     };
@@ -41,6 +45,7 @@ export const useSessionTimerStore = defineStore('SessionTimer', () => {
         activeSessionExists,
         createSession,
         fetchActiveSession,
+        runActiveSession,
         pauseActiveSession,
     };
 });

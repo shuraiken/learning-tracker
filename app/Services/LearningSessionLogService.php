@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\LearningSession;
 use App\Models\LearningSessionLog;
-use App\Enums\LearningSessionLogStatus;
+use App\Enums\LearningSessionStatus;
 
 class LearningSessionLogService
 {
@@ -22,12 +23,11 @@ class LearningSessionLogService
         return $log;
     }
 
-    public function createLearningSessionLog(array $data)
-    {
+    public function runLearningSessionLog(LearningSession $learningSession) {
         return LearningSessionLog::create([
-            'learning_session_id' => $data['learningSessionId'],
+            'learning_session_id' => $learningSession->id,
             'start_time' => now(),
-            'status' => LearningSessionLogStatus::RUNNING->value,
+            'status' => LearningSessionStatus::RUNNING->value,
         ]);
     }
 
@@ -37,7 +37,7 @@ class LearningSessionLogService
 
         $learningSessionLog->update([
             'end_time' => now(),
-            'status' => LearningSessionLogStatus::PAUSED->value,
+            'status' => LearningSessionStatus::PAUSED->value,
         ]);
     }
 
@@ -47,7 +47,7 @@ class LearningSessionLogService
 
         $learningSessionLog->update([
             'end_time' => now(),
-            'status' => LearningSessionLogStatus::COMPLETED->value,
+            'status' => LearningSessionStatus::COMPLETED->value,
         ]);
     }
 
@@ -55,7 +55,7 @@ class LearningSessionLogService
     {
         return LearningSessionLog::query()
             ->where('learning_session_id', $learningSessionId)
-            ->where('status', LearningSessionLogStatus::RUNNING->value)
+            ->where('status', LearningSessionStatus::RUNNING->value)
             ->first();
     }
 }

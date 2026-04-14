@@ -3,9 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\LearningSessionStatus;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -44,5 +46,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function runningLearningSession(): ?LearningSession
+    {
+        return $this->learningSessions()
+            ->where('status', LearningSessionStatus::RUNNING->value)
+            ->first();
+    }
+
+    /**
+     * Get all of the learningSessions for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function learningSessions(): HasMany
+    {
+        return $this->hasMany(LearningSession::class);
     }
 }

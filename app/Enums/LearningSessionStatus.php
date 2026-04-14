@@ -4,7 +4,8 @@ namespace App\Enums;
 
 enum LearningSessionStatus: string
 {
-    case ACTIVE = 'active';
+    case STARTED = 'started';
+    case RUNNING = 'running';
     case PAUSED = 'paused';
     case COMPLETED = 'completed';
 }

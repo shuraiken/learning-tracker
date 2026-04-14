@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
 
+type Learning = {
+    id: number;
+    name: string;
+};
+
 const props = defineProps<{
-    items: Array<object>;
+    items: Array<Learning>;
     selectedItem: number;
 }>();
 const emits = defineEmits<{

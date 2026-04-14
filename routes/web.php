@@ -2,14 +2,21 @@
 
 use Inertia\Inertia;
 use App\Models\Learning;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasteryController;
 use App\Http\Controllers\LearningController;
+use App\Http\Controllers\LearningSessionLogController;
+use App\Http\Controllers\Api\LearningSessionController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\MasteryController as ApiMasteryController;
 use App\Http\Controllers\Api\LearningController as ApiLearningController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
+Route::get('/', function (Request $request) {
+    return Inertia::render('auth/Login', [
+            'canResetPassword' => Route::has('password.request'),
+            'status' => $request->session()->get('status'),
+        ]);
 })->name('home');
 
 Route::get('dashboard', function () {
@@ -34,7 +41,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('masteries', ApiMasteryController::class)->except(['create', 'edit']);
 
         Route::prefix('learning-sessions')->group(function () {
-            // Route::get('current')
+            Route::post('', [LearningSessionController::class, 'store']);
+            Route::post('/{id}/run', [LearningSessionController::class, 'updateRunning']);
         });
     });
 });

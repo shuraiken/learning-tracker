@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->time('start_time');
             $table->time('end_time');
             $table->decimal('hours_spent');
+            $table->dateTime('paused_at')->nullable();
             $table->enum('status', ['running', 'paused', 'completed']);
             $table->timestamps();
         });

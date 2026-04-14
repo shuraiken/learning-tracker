@@ -2,7 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\LearningSessionStatus;
+use App\Models\LearningSession;
 use Illuminate\Database\Eloquent\Model;
+use App\States\LearningSessionLog\PausedState;
+use App\States\LearningSessionLog\RunningState;
+use App\States\LearningSessionLog\CompletedState;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\States\LearningSessionLog\LearningSessionLogStateContract;
 
@@ -12,21 +17,24 @@ class LearningSessionLog extends Model
         'learning_session_id',
         'start_time',
         'end_time',
-        'hours_spent'
+        'hours_spent',
+        'paused_at',
+        'status',
     ];
 
     public function state(): LearningSessionLogStateContract
     {
         return match($this->status) {
-            LearningSessionLogStatus::RUNNING->value => new RunningState($this),
-            LearningSessionLogStatus::PAUSED->value => new PausedState($this),
-            LearningSessionLogStatus::COMPLETED->value => new CompletedState($this),
-        }
+            LearningSessionStatus::RUNNING->value => new RunningState($this),
+            LearningSessionStatus::PAUSED->value => new PausedState($this),
+            LearningSessionStatus::COMPLETED->value => new CompletedState($this),
+        };
     }
 
     public function setStatus(string $status): void
     {
         $this->status = $status;
+        $this->save();
     }
 
     /**
