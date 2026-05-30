@@ -1,0 +1,124 @@
+Enum learning_session_status {
+  active
+  paused
+  completed
+}
+
+Enum learning_session_log_type {
+  start
+  pause
+  resume
+  stop
+}
+
+Table users {
+  id bigint PK
+  name varchar(255)
+  email varchar(255) [unique, not null]
+  email_verified_at timestamp [null]
+  password varchar(255)
+  remember_token varchar(100)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table password_reset_tokens {
+  email varchar(255) PK
+  token varchar(255)
+  created_at timestamp [null]
+}
+
+Table sessions {
+  id varchar(255) PK
+  user_id bigint [null]
+  ip_address varchar(45) [null]
+  user_agent text [null]
+  payload longtext
+  last_activity integer
+}
+
+Table groups {
+  id bigint PK
+  user_id bigint [not null]
+  name varchar(255)
+  deleted_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table masteries {
+  id bigint PK
+  user_id bigint [not null]
+  name varchar(255)
+  deleted_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table tags {
+  id bigint PK
+  user_id bigint [not null]
+  name varchar(255)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table learnings {
+  id bigint PK
+  user_id bigint [not null]
+  group_id bigint [null]
+  mastery_id bigint [null]
+  name varchar(255)
+  description text [null]
+  deleted_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table learning_sessions {
+  id bigint PK
+  learning_id bigint [not null]
+  name varchar(255) [null]
+  started_at datetime
+  ended_at datetime [null]
+  status learning_session_status
+  total_duration bigint [null]  // in minutes
+  note varchar(255) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table learning_tag {
+  id bigint PK
+  learning_id bigint [not null]
+  tag_id bigint [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table learning_session_logs {
+  id bigint PK
+  learning_session_id bigint [not null]
+  type learning_session_log_type
+  occured_at datetime
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Ref: sessions.user_id > users.id
+
+Ref: groups.user_id > users.id
+Ref: masteries.user_id > users.id
+Ref: tags.user_id > users.id
+
+Ref: learnings.user_id > users.id [delete: cascade]
+Ref: learnings.group_id > groups.id [delete: set null]
+Ref: learnings.mastery_id > masteries.id [delete: set null]
+
+Ref: learning_sessions.learning_id > learnings.id [delete: cascade]
+
+Ref: learning_tag.learning_id > learnings.id
+Ref: learning_tag.tag_id > tags.id
+
+Ref: learning_session_logs.learning_session_id > learning_sessions.id [delete: cascade]
+    
