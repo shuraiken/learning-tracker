@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Services\MasteryService;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ApiController;
 
-class MasteryController extends ApiController
+class MasteryController extends Controller
 {
     public function __construct(protected MasteryService $masteryService)
     {
