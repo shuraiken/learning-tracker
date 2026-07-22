@@ -48,10 +48,10 @@ class User extends Authenticatable
         ];
     }
 
-    public function runningLearningSession(): ?LearningSession
+    public function activeLearningSession(): ?LearningSession
     {
         return $this->learningSessions()
-            ->where('status', LearningSessionStatus::RUNNING->value)
+            ->where('status', LearningSessionStatus::ACTIVE->value)
             ->first();
     }
 
