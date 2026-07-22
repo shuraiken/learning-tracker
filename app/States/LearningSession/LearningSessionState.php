@@ -3,7 +3,7 @@
 namespace App\States\LearningSession;
 
 use App\Models\LearningSession;
-use App\States\LearningSession\LearningSessionStateContract;
+use App\Contracts\LearningSessionStateContract;
 use Exception;
 
 class LearningSessionState implements LearningSessionStateContract
@@ -12,12 +12,7 @@ class LearningSessionState implements LearningSessionStateContract
     {
     }
 
-    public function start(): void
-    {
-        throw new Exception();
-    }
-
-    public function resume(): void
+    public function activate(): void
     {
         throw new Exception();
     }
@@ -27,7 +22,7 @@ class LearningSessionState implements LearningSessionStateContract
         throw new Exception();
     }
 
-    public function stop(): void
+    public function complete(): void
     {
         throw new Exception();
     }
