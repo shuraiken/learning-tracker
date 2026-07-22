@@ -23,7 +23,7 @@ return new class extends Migration {
                 ->constrained('masteries')
                 ->nullOnDelete();
             $table->string('name');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

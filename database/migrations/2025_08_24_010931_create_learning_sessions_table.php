@@ -12,14 +12,13 @@ return new class extends Migration {
     {
         Schema::create('learning_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
             $table->foreignId('learning_id')->constrained('learnings');
             $table->string('name')->nullable();
-            $table->dateTime('started_at');
-            $table->dateTime('ended_at');
-            $table->enum('status', ['started', 'running', 'paused', 'completed']);
-            $table->decimal('hours_spent');
-            $table->string('note');
+            $table->dateTime('started_at')->nullable();
+            $table->dateTime('ended_at')->nullable();
+            $table->enum('status', ['active','paused', 'completed']);
+            $table->bigInteger('total_duration');
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }
