@@ -6,12 +6,12 @@ use App\States\LearningSession\LearningSessionState;
 
 class PausedState extends LearningSessionState
 {
-    public function resume(): void
+    public function activate(): void
     {
-        $this->learningSession->setStatus('running');
+        $this->learningSession->setStatus('active');
     }
 
-    public function stop(): void
+    public function complete(): void
     {
         $this->learningSession->setStatus('completed');
     }
