@@ -11,7 +11,11 @@ class LearningSessionLog extends Model
     protected $fillable = [
         'learning_session_id',
         'type',
-        'occured_at',
+        'occurred_at',
+    ];
+
+    protected $casts = [
+        'occurred_at' => 'datetime',
     ];
 
     /**
