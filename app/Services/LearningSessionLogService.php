@@ -27,28 +27,28 @@ class LearningSessionLogService
     public function runLearningSessionLog(LearningSession $learningSession) {
         return $learningSession->logs()->create([
             'type' => LearningSessionLogType::START,
-            'occured_at' => now(),
+            'occurred_at' => now(),
         ]);
     }
 
     public function resumeLearningSessionLog(LearningSession $learningSession) {
         return $learningSession->logs()->create([
             'type' => LearningSessionLogType::RESUME,
-            'occured_at' => now(),
+            'occurred_at' => now(),
         ]);
     }
 
     public function pauseLearningSessionLog(LearningSession $learningSession) {
         return $learningSession->logs()->create([
             'type' => LearningSessionLogType::PAUSE,
-            'occured_at' => now(),
+            'occurred_at' => now(),
         ]);
     }
 
     public function stopLearningSessionLog(LearningSession $learningSession) {
         return $learningSession->logs()->create([
             'type' => LearningSessionLogType::STOP,
-            'occured_at' => now(),
+            'occurred_at' => now(),
         ]);
     }
 }
