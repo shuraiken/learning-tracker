@@ -15,7 +15,7 @@ class ActivateLearningSessionAndLogController extends Controller
     public function store(Request $request)
     {
         $safe = $request->validate([
-            'learningId' => ['required', 'exists:learnings,id'],
+            'learning_id' => ['required', 'exists:learnings,id'],
             'name' => ['nullable', 'string'],
             'note' => ['nullable', 'string'],
         ]);
