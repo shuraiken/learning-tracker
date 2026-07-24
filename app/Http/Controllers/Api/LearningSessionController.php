@@ -49,15 +49,6 @@ class LearningSessionController extends Controller
         }
     }
 
-    public function run(int $id)
-    {
-        try {
-            $this->learningSessionService->runLearningSession($id);
-        } catch (\Exception $e) {
-            return $this->jsonException($e);
-        }
-    }
-
     /**
      * Display the specified resource.
      */
