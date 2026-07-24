@@ -4,8 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\LearningSessionStatus;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -58,10 +58,10 @@ class User extends Authenticatable
     /**
      * Get all of the learningSessions for the User
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
-    public function learningSessions(): HasMany
+    public function learningSessions(): HasManyThrough
     {
-        return $this->hasMany(LearningSession::class);
+        return $this->hasManyThrough(LearningSession::class, Learning::class);
     }
 }
