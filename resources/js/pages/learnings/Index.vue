@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-`import { Badge } from '@/components/ui/badge';`;
+// `import { Badge } from '@/components/ui/badge';`;
 
 const state = reactive({
     form: {
