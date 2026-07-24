@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import axios from 'axios';
 import { useDebounceFn } from '@vueuse/core';
-import { reactive, watch, watchEffect } from 'vue';
+import { reactive, onMounted, watchEffect } from 'vue';
 import { Trash2, Ellipsis,  } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import PlayButton from '@/components/PlayButton.vue'
+import { useLearningSession } from '@/composables/useLearningSession';
+
+const { createLearningSession, createLearningSessionAndLog } = useLearningSession();
 
 const props = defineProps<{
     item: number;
@@ -28,20 +30,20 @@ const emits = defineEmits<{
 
 const state = reactive({
     isConfirmDeleteOpen: false,
+    isSessionFormOpen: false,
     learning: {
         name: '',
     },
+    learningSession: {
+        name: '',
+    }
 });
-
-const debounce = (callback: () => void, delay: number) => {
-    useDebounceFn(callback, delay);
-}
 
 const fetchLearning = async () => {
     try {
         const res = await axios.get(`/server/learnings/${props.item}`);
 
-        state.learning = res.data;
+        state.learning = res.data.data;
     } catch (e) {
         console.error(e);
     }
@@ -56,13 +58,33 @@ const updateLearning = async () => {
     }
 }
 
-const debounceUpdateLearning = useDebounceFn(updateLearning, 1000);
-
 const deleteLearning = async () => {
     try {
-        const res = await axios.delete(`/server/learnings/${props.item}`);
+        await axios.delete(`/server/learnings/${props.item}`);
         state.isConfirmDeleteOpen = false;
         emits('delete:learning');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+type LearningAction = 'save' | 'saveAndRun';
+
+const create = async (action: LearningAction) => {
+    try {
+        if (action === 'save') {
+            await createLearningSession({
+                name: state.learningSession.name,
+                learning_id: props.item,
+            });
+        } else if (action === 'saveAndRun') {
+            await createLearningSessionAndLog({
+                name: state.learningSession.name,
+                learning_id: props.item,
+            });
+        }
+
+        state.isSessionFormOpen = false;
     } catch (e) {
         console.error(e);
     }
@@ -80,14 +102,27 @@ watchEffect(async () => {
         <form class="relative w-full h-full space-y-3">
             <div class="text-xl font-bold">
                 <input v-model="state.learning.name" @input="
-                debounceUpdateLearning" type="text" class="w-full focus:outline-none" />
+                useDebounceFn(updateLearning, 1000)" type="text" class="w-full focus:outline-none" />
             </div>
             <hr class="bg-sidebar-border"></hr>
             <div class="grid grid-cols-2">
                 <div></div>
             </div>
 
-            <PlayButton />
+            <button @click="state.isSessionFormOpen = true" type="button" class="cursor-pointer rounded-lg border border-white">Start New Session</button>
+
+            <div v-if="state.isSessionFormOpen" class="relative w-full h-full space-y-3">
+                <span>What name would you like to give this session?</span>
+                <div class="text-xl font-bold">
+                    <input v-model="state.learningSession.name" type="text" class="w-full focus:focus-none border border-white" />
+                </div>
+                <div class="flex justify-center gap-2">
+                    <button type="button" @click="create('save')" class="px-4 py-2 cursor-pointer rounded-lg border border-white">Save</button>
+                    <button type="button" @click="create('saveAndRun')" class="px-4 py-2 cursor-pointer rounded-lg border border-white">Save & Run</button>
+                </div>
+            </div>
+
+            <!-- <PlayButton /> -->
 
             <DropdownMenu class="relative">
                 <DropdownMenuTrigger class="absolute right-0 size-8 text-neutral-500 bottom-2">

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('learning_session_id')
                 ->constrained('learning_sessions');
-            $table->string('type'); // start, pause, resume, stop
+            $table->string('type'); // start, pause, resume, stop`
             $table->dateTime('occurred_at');
             $table->timestamps();
         });

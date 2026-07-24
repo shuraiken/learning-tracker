@@ -1,0 +1,36 @@
+MVP
+[x] - Skills Module (Create, Read, Update, Delete)
+[x] - Sessions Module (Session Timer)
+[] - Dashboard
+
+Post-MVP
+[] - Groups
+[] - Tags
+[] - Masteries
+[] - Improved Dashboard (Analytics)
+[] - Pomodoro Mode
+[] - Markdowns??
+
+Current
+[x] - Fix LearningSessionLog::state()
+[x] - Update LearningSession type in types.ts
+    [x] - update 'status' prop values
+    [x] - add total_duration prop
+[x] - LearningSessionService - fix pauseLearningSession()
+[x] - LearningSessionService - stopLearningSession()
+[x] - Update total_duration on pause and stop
+[x] - LearningSessionLogService - resumeLearningSessionLog()
+[x] - LearningSessionLogService - pauseLearningSessionLog()
+[x] - LearningSessionLogService - stopLearningSessionLog()
+[x] - Update ActiveState
+[x] - Update PausedState
+[x] - POST /learning-sessions/{id}/pause PauseLearningSessionController
+[x] - POST /learning-sessions/{id}/resume ResumeLearningSessionController
+[x] - POST /learning-sessions/{id}/stop StopLearningSessionController
+[x] - Register new routes
+[x] - LearningSessionService - refactor stopLearningSession() to create only a stop log without changing status (endLearningSession)
+[x] - Create a separate method for ending a learning session
+[x] - Create new endpoint and method to add start log to active learning session for onStart in SessionTimer.vue
+
+Pending
+
