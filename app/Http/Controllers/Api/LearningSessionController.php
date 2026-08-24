@@ -17,7 +17,7 @@ class LearningSessionController extends Controller
      */
     public function index()
     {
-        //
+
     }
 
     public function getCurrentSession(Request $request)
@@ -33,7 +33,7 @@ class LearningSessionController extends Controller
     public function store(Request $request)
     {
         $safe = $request->validate([
-            'learningId' => ['required', 'exists:learnings,id'],
+            'learning_id' => ['required', 'exists:learnings,id'],
             'name' => ['nullable', 'string'],
             'note' => ['nullable', 'string'],
         ]);
@@ -44,15 +44,6 @@ class LearningSessionController extends Controller
             return $this->json($learningSession);
         } catch (ActiveSessionAlreadyExistsException $e) {
             return $this->jsonException($e);
-        } catch (\Exception $e) {
-            return $this->jsonException($e);
-        }
-    }
-
-    public function run(int $id)
-    {
-        try {
-            $this->learningSessionService->runLearningSession($id);
         } catch (\Exception $e) {
             return $this->jsonException($e);
         }

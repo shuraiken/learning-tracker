@@ -15,70 +15,121 @@ class LearningSessionService
     {
     }
 
-    public function getCurrentSession()
+    public function getCurrentSession(): ?LearningSession
     {
         return LearningSession::query()
-            ->where('user_id', auth()->user()->id)
-            ->where('status', LearningSessionStatus::STARTED->value)
+            ->whereRelation('learning', 'user_id', auth()->user()->id)
+            ->where('status', LearningSessionStatus::ACTIVE->value)
+            ->orWhere('status', LearningSessionStatus::PAUSED->value)
             ->latest()
             ->first();
     }
 
-    public function checkIfActiveSessionExists()
+    public function checkIfActiveSessionExists(): bool
     {
         return $this->getCurrentSession() ? true : false;
     }
 
-    public function createLearningSession(array $data)
+    public function createLearningSession(array $data): LearningSession
     {
         if ($this->checkIfActiveSessionExists()) {
             throw new ActiveSessionAlreadyExistsException();
         }
 
         $learningSession = LearningSession::create([
-            'user_id' => auth()->user()->id,
-            'learning_id' => $data['learningId'],
+            'learning_id' => $data['learning_id'],
             'name' => $data['name'] ?? null,
             'note' => $data['note'] ?? null,
-            'status' => LearningSessionStatus::STARTED->value
+            'status' => LearningSessionStatus::ACTIVE->value,
         ]);
 
         return $learningSession;
     }
 
-    public function runLearningSession(int $id)
+    public function createLearningSessionAndRunSessionLog(array $data)
     {
-        DB::transaction(function () use ($id) {
-            if (auth()->user()->runningLearningSession()) {
-                throw new Exception('You already have a running learning session');
-            }
+        return DB::transaction(function () use ($data) {
+            $learningSession = $this->createLearningSession($data);
 
-            $learningSession = LearningSession::findOrFail($id);
+            $learningSessionLog = $this->startLearningSession($learningSession->id);
 
-            $learningSession->state('started')->resume();
-
-            $this->learningSessionLogService->runLearningSessionLog($learningSession);
+            return [$learningSession, $learningSessionLog];
         });
     }
 
-
-    public function resumeLearningSession(int $id)
+    public function startLearningSession(int $id)
     {
         $learningSession = LearningSession::findOrFail($id);
 
-        $learningSession->state('paused')->resume();
+        $learningSession->update([
+            'started_at' => now(),
+        ]);
+
+        $this->learningSessionLogService->runLearningSessionLog($learningSession);
+
+        return $learningSession;
+    }
+
+    public function resumeLearningSession(LearningSession $learningSession)
+    {
+        $now = now();
+
+        $learningSession->state('paused')->activate();
+
+        return $this->learningSessionLogService->resumeLearningSessionLog($learningSession);
     }
 
     public function pauseLearningSession(LearningSession $learningSession)
     {
+        DB::transaction(function () use ($learningSession) {
+            $now = now();
+            $previousLog = $learningSession->logs()->latest()->first();
+
+            $learningSession->state('active')->pause();
+
+            $this->learningSessionLogService->pauseLearningSessionLog($learningSession);
+
+            $segmentDuration = $previousLog
+                ? abs($now->diffInSeconds($previousLog->occurred_at))
+                : 0;
+
+            $learningSession->increment('total_duration', $segmentDuration);
+        });
+    }
+
+    // Creates a stop log
+    public function stopLearningSession(LearningSession $learningSession)
+    {
+        $now = now();
+
+        $previousLog = $learningSession->logs()->latest()->first();
+
+        $this->learningSessionLogService->stopLearningSessionLog($learningSession);
+
+        $segmentDuration = $previousLog
+            ? abs($now->diffInSeconds($previousLog->occurred_at))
+            : 0;
+
+        $learningSession->increment('total_duration', $segmentDuration);
+    }
+
+    // Creates a stop log and set learning session as complete
+    public function endLearningSession(LearningSession $learningSession)
+    {
+        $now = now();
+        $previousLog = $learningSession->logs()->latest()->first();
+        $segmentDuration = $previousLog
+            ? abs($now->diffInSeconds($previousLog->occurred_at))
+            : 0;
+
+        $latestLog = $this->learningSessionLogService->stopLearningSessionLog($learningSession);
+
         $learningSession->update([
-            'status' => LearningSessionStatus::PAUSED->value,
+            'ended_at' => $now,
         ]);
 
-        $runningLog = $this->learningSessionLogService->findRunningLog($learningSession->id);
+        $learningSession->state($learningSession->status)->complete();
 
-        if ($runningLog) {
-            $this->learningSessionLogService->pauseLearningSessionLog($runningLog->id);
-        }
+        $learningSession->increment('total_duration', $segmentDuration);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LearningSession;
 use App\Models\LearningSessionLog;
 use App\Enums\LearningSessionStatus;
+use App\Enums\LearningSessionLogType;
 
 class LearningSessionLogService
 {
@@ -24,38 +25,30 @@ class LearningSessionLogService
     }
 
     public function runLearningSessionLog(LearningSession $learningSession) {
-        return LearningSessionLog::create([
-            'learning_session_id' => $learningSession->id,
-            'start_time' => now(),
-            'status' => LearningSessionStatus::RUNNING->value,
+        return $learningSession->logs()->create([
+            'type' => LearningSessionLogType::START,
+            'occurred_at' => now(),
         ]);
     }
 
-    public function pauseLearningSessionLog(int $learningSessionLogId)
-    {
-        $learningSessionLog = $this->findLearningSessionLog($learningSessionLogId);
-
-        $learningSessionLog->update([
-            'end_time' => now(),
-            'status' => LearningSessionStatus::PAUSED->value,
+    public function resumeLearningSessionLog(LearningSession $learningSession) {
+        return $learningSession->logs()->create([
+            'type' => LearningSessionLogType::RESUME,
+            'occurred_at' => now(),
         ]);
     }
 
-    public function endLog(int $learningSessionLogId)
-    {
-        $learningSessionLog = $this->findLearningSessionLog($learningSessionLogId);
-
-        $learningSessionLog->update([
-            'end_time' => now(),
-            'status' => LearningSessionStatus::COMPLETED->value,
+    public function pauseLearningSessionLog(LearningSession $learningSession) {
+        return $learningSession->logs()->create([
+            'type' => LearningSessionLogType::PAUSE,
+            'occurred_at' => now(),
         ]);
     }
 
-    public function findRunningLog(int $learningSessionId)
-    {
-        return LearningSessionLog::query()
-            ->where('learning_session_id', $learningSessionId)
-            ->where('status', LearningSessionStatus::RUNNING->value)
-            ->first();
+    public function stopLearningSessionLog(LearningSession $learningSession) {
+        return $learningSession->logs()->create([
+            'type' => LearningSessionLogType::STOP,
+            'occurred_at' => now(),
+        ]);
     }
 }

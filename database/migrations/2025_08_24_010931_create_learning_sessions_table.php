@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->dateTime('started_at')->nullable();
             $table->dateTime('ended_at')->nullable();
             $table->enum('status', ['active','paused', 'completed']);
-            $table->bigInteger('total_duration');
+            $table->bigInteger('total_duration')->default(0);
             $table->string('note')->nullable();
             $table->timestamps();
         });

@@ -4,11 +4,11 @@ namespace App\States\LearningSession;
 
 use App\States\LearningSession\LearningSessionState;
 
-class PausedState extends LearningSessionState
+class ActiveState extends LearningSessionState
 {
-    public function activate(): void
+    public function pause(): void
     {
-        $this->learningSession->setStatus('active');
+        $this->learningSession->setStatus('paused');
     }
 
     public function complete(): void

@@ -4,7 +4,7 @@ import { Play } from 'lucide-vue-next';
 </script>
 
 <template>
-    <Button size="icon">
+    <Button size="icon" class="cursor-pointer">
         <Play class="w-6" />
     </Button>
 </template>

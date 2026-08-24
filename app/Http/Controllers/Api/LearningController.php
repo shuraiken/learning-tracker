@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\ApiController;
 use Illuminate\Http\Request;
 use App\Services\LearningService;
 use App\Http\Controllers\Controller;
 
-class LearningController extends ApiController
+class LearningController extends Controller
 {
     public function __construct(protected LearningService $learningService)
     {
@@ -67,7 +66,7 @@ class LearningController extends ApiController
             'page' => ['nullable', 'numeric'],
         ]);
 
-        $learnings = $this->learningService->getPaginatedFiltered($safe, ['mastery:id,name']);
+        $learnings = $this->learningService->getFilteredQuery($safe, ['mastery:id,name'])->get();
 
         return $this->json($learnings);
     }
