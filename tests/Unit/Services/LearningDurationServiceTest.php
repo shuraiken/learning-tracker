@@ -18,7 +18,11 @@ describe('buildActiveIntervals', function () {
             (object) ['type' => LearningSessionLogType::PAUSE, 'occurred_at' => '2026-09-08 10:30:00']
         ];
 
-        expect(count($service->buildActiveIntervals($logs)))->toBe(1);
+        $results = $service->buildActiveIntervals($logs);
+
+        expect(count($results))->toBe(1)
+            ->and($results[0]['start'])->toBe('2026-09-08 10:00:00')
+            ->and($results[0]['end'])->toBe('2026-09-08 10:30:00');
     });
 
     it('returns one interval for one start & stop logs', function() {
@@ -29,7 +33,11 @@ describe('buildActiveIntervals', function () {
             (object) ['type' => LearningSessionLogType::STOP, 'occurred_at' => '2026-09-08 11:30:00']
         ];
 
-        expect(count($service->buildActiveIntervals($logs)))->toBe(1);
+        $results = $service->buildActiveIntervals($logs);
+
+        expect(count($results))->toBe(1)
+            ->and($results[0]['start'])->toBe('2026-09-08 11:00:00')
+            ->and($results[0]['end'])->toBe('2026-09-08 11:30:00');
     });
 
     it('returns two intervals for start-pause-resume-pause logs', function() {
@@ -42,7 +50,13 @@ describe('buildActiveIntervals', function () {
             (object) ['type' => LearningSessionLogType::PAUSE, 'occurred_at' => '2026-09-08 12:00:00']
         ];
 
-        expect(count($service->buildActiveIntervals($logs)))->toBe(2);
+        $results = $service->buildActiveIntervals($logs);
+
+        expect(count($results))->toBe(2)
+            ->and($results[0]['start'])->toBe('2026-09-08 11:00:00')
+            ->and($results[0]['end'])->toBe('2026-09-08 11:30:00')
+            ->and($results[1]['start'])->toBe('2026-09-08 11:31:00')
+            ->and($results[1]['end'])->toBe('2026-09-08 12:00:00');
     });
 
     it('returns two intervals for start-pause-resume-stop logs', function() {
@@ -55,7 +69,13 @@ describe('buildActiveIntervals', function () {
             (object) ['type' => LearningSessionLogType::STOP, 'occurred_at' => '2026-09-08 12:00:00']
         ];
 
-        expect(count($service->buildActiveIntervals($logs)))->toBe(2);
+        $results = $service->buildActiveIntervals($logs);
+
+        expect(count($results))->toBe(2)
+            ->and($results[0]['start'])->toBe('2026-09-08 11:00:00')
+            ->and($results[0]['end'])->toBe('2026-09-08 11:30:00')
+            ->and($results[1]['start'])->toBe('2026-09-08 11:31:00')
+            ->and($results[1]['end'])->toBe('2026-09-08 12:00:00');
     });
 
     it('returns empty array for pause log with no matching start', function() {
@@ -107,7 +127,7 @@ describe('calculateDuration', function () {
         $intervals = $service->buildActiveIntervals($logs);
         $result = $service->calculateDuration($intervals, '2026-09-08 00:00:00', '2026-09-08 23:59:59');
 
-        expect($result)->toBe(1800); // 30 minutes -> overlapped 5 minutes
+        expect($result)->toBe(1800); // Clipped at period end
     });
 
     it('does not return full duration for an interval that starts before the specified period', function() {
@@ -121,10 +141,10 @@ describe('calculateDuration', function () {
         $intervals = $service->buildActiveIntervals($logs);
         $result = $service->calculateDuration($intervals, '2026-09-08 00:00:00', '2026-09-08 23:59:59');
 
-        expect($result)->toBe(1800); // 30 minutes -> overlapped 5 minutes
+        expect($result)->toBe(1800); // Clipped at period start
     });
 
-    it('does not return full duration for an interval that starts before and ends after the specified period', function() {
+    it('returns full duration for an interval that starts before and ends after the specified period', function() {
         $service = new LearningDurationService();
 
         $logs = [
@@ -135,10 +155,10 @@ describe('calculateDuration', function () {
         $intervals = $service->buildActiveIntervals($logs);
         $result = $service->calculateDuration($intervals, '2026-09-08 00:00:00', '2026-09-08 23:59:59');
 
-        expect($result)->not->toBe(1800); // 30 minutes -> overlapped 5 minutes
+        expect($result)->toBe(86399); // Full day - interval spans entire period
     });
 
-    it('returns zero on duration before the specified period', function() {
+    it('returns zero when interval is entirely before the specified period', function() {
         $service = new LearningDurationService();
 
         $logs = [
@@ -149,7 +169,7 @@ describe('calculateDuration', function () {
         $intervals = $service->buildActiveIntervals($logs);
         $result = $service->calculateDuration($intervals, '2026-09-08 00:00:00', '2026-09-08 23:59:59');
 
-        expect($result)->not->toBe(1800); // 30 minutes -> overlapped 5 minutes
+        expect($result)->toBe(0); // No overlap - interval fully outside period
     });
 
     it('returns expected duration for multiple intervals with partial overlaps', function() {
@@ -157,7 +177,7 @@ describe('calculateDuration', function () {
 
         $logs = [
             (object) ['type' => LearningSessionLogType::START, 'occurred_at' => '2026-09-07 23:30:00'],
-            (object) ['type' => LearningSessionLogType::PAUSE, 'occurred_at' => '2026-09-07 00:30:00'],
+            (object) ['type' => LearningSessionLogType::PAUSE, 'occurred_at' => '2026-09-08 00:30:00'],
             (object) ['type' => LearningSessionLogType::RESUME, 'occurred_at' => '2026-09-08 23:30:00'],
             (object) ['type' => LearningSessionLogType::PAUSE, 'occurred_at' => '2026-09-09 00:30:00'],
         ];
@@ -165,7 +185,7 @@ describe('calculateDuration', function () {
         $intervals = $service->buildActiveIntervals($logs);
         $result = $service->calculateDuration($intervals, '2026-09-08 00:00:00', '2026-09-08 23:59:59');
 
-        expect($result)->not->toBe(3599); // 30 minutes -> overlapped 5 minutes
+        expect($result)->toBe(3599); // Sum of clipped durations
     });
 
     it('returns zero when no logs found', function() {
