@@ -7,7 +7,7 @@ use App\Enums\LearningSessionLogType;
 
 class LearningDurationService
 {
-    public function buildActiveIntervals($sessionLogs)
+    public function buildActiveIntervals(array $sessionLogs): array
     {
         $intervals = [];
         $currentStart = null;
@@ -30,7 +30,7 @@ class LearningDurationService
         return $intervals;
     }
 
-    public function calculateDuration($intervals, $periodStart, $periodEnd)
+    public function calculateDuration(array $intervals, string $periodStart, string $periodEnd): int
     {
         $totalDuration = 0;
         $parsedPeriodStart = Carbon::parse($periodStart);
@@ -38,10 +38,10 @@ class LearningDurationService
 
         foreach ($intervals as $interval) {
             $intervalStart = Carbon::parse($interval['start']);
-            $intervalend = Carbon::parse($interval['end']);
+            $intervalEnd = Carbon::parse($interval['end']);
 
-            $overlapStart = max($intervalStart, $parsedPeriodStart);
-            $overlapEnd = min($intervalEnd, $parsedPeriodEnd);
+            $overlapStart = $intervalStart->max($parsedPeriodStart);
+            $overlapEnd = $intervalEnd->min($parsedPeriodEnd);
 
             if ($overlapStart < $overlapEnd) {
                 $totalDuration += $overlapStart->diffInSeconds($overlapEnd);
