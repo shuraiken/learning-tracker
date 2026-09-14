@@ -47,7 +47,7 @@ class DashboardService
         // $totalTimeToday = $this->user->learningSessions()->logs()->whereDate('learning_session_logs.created_at', today())->sum('total_duration');
 
         $periodStart = today();
-        $periodEnd = today()->addDay();
+        $periodEnd = today()->addDay()->startOfDay();
         
         $totalTimeToday = $this->user->learningSessions()->whereDate('learning_sessions.created_at', today())->sum('total_duration');
 
