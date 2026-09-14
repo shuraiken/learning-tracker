@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\LearningSessionStatus;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,6 +54,16 @@ class User extends Authenticatable
         return $this->learningSessions()
             ->where('status', LearningSessionStatus::ACTIVE->value)
             ->first();
+    }
+
+    /**
+     * Get all of the learnings for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function learnings(): HasMany
+    {
+        return $this->hasMany(Learning::class);
     }
 
     /**
