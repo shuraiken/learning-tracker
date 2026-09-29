@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\LearningSessionStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\States\LearningSession\PausedState;
 use App\States\LearningSession\ActiveState;
@@ -14,6 +15,8 @@ use App\Contracts\LearningSessionStateContract;
 
 class LearningSession extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'learning_id',
         'name',

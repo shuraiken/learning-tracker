@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\CarbonInterval;
+use App\Models\Learning;
 use App\Models\LearningSession;
 
 class DashboardService
@@ -48,7 +49,7 @@ class DashboardService
 
         $periodStart = today();
         $periodEnd = today()->addDay()->startOfDay();
-        
+
         $totalTimeToday = $this->user->learningSessions()->whereDate('learning_sessions.created_at', today())->sum('total_duration');
 
         $timeFormatted = CarbonInterval::seconds($totalTimeToday)->forHumans();
@@ -63,7 +64,7 @@ class DashboardService
     {
         $periodStart = today()->startOfWeek();
         $periodEnd = today()->endOfWeek()->addDay()->startOfDay();
-        
+
         $totalTimeThisWeek = $this->user->learningSessions()->whereDate('learning_sessions.created_at', '>=', today()->startOfWeek())->sum('total_duration');
         $timeFormatted = CarbonInterval::seconds($totalTimeThisWeek)->forHumans();
 
@@ -71,5 +72,29 @@ class DashboardService
             'totalTimeThisWeek' => $totalTimeThisWeek,
             'timeFormatted' => $timeFormatted,
         ];
+    }
+
+    public function getSkillBreakdown(): array
+    {
+        // $learnings = Learning::orderBy(
+        //     LearningSession::select('total_duration')->sum('total_duration');
+        // )->get();
+
+
+        $learnings = Learning::where('user_id', $this->user->id)
+            ->whereHas('learningSessions')
+            ->withSum('learningSessions', 'total_duration')
+            ->orderByDesc('learning_sessions_sum_total_duration')
+            ->get()
+            ->map(fn($learning) => [
+                'id' => $learning->id,
+                'name' => $learning->name,
+                'total_duration' => (int) $learning->learning_sessions_sum_total_duration,
+                'duration_formatted' => CarbonInterval::seconds(
+                    $learning->learning_sessions_sum_total_duration
+                )->cascade()->forHumans(),
+            ]);
+
+        return $learnings->values()->toArray();
     }
 }

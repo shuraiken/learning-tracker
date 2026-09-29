@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import axios from 'axios';
+import { onMounted } from 'vue';
 import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -13,6 +15,19 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
 ];
+
+const fetchOverviewData = async () => {
+    try {
+        const response = await axios.get('/server/dashboard/overview');
+        console.info(response.data);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+onMounted(() => {
+    fetchOverviewData();
+});
 </script>
 
 <template>
@@ -20,7 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <Drawer>
+            <!-- <Drawer>
                 <DrawerTrigger class="w-32 rounded-lg border border-gray-800 px-2.5 py-1 text-center font-semibold">New Learning</DrawerTrigger>
 
                 <DrawerContent class="fixed top-0 right-0">
@@ -37,7 +52,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Button>Submit</Button>
                     </DrawerFooter>
                 </DrawerContent>
-            </Drawer>
+            </Drawer> -->
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                 <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     <PlaceholderPattern />

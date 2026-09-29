@@ -9,4 +9,5 @@ Route::prefix('server')->group(function () {
     Route::resource('masteries', ApiMasteryController::class)->except(['create', 'edit']);
 
     require __DIR__ . '/api/learning-sessions.php';
+    require __DIR__ . '/api/dashboard.php';
 });
