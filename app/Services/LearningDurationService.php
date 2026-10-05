@@ -4,10 +4,11 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use App\Enums\LearningSessionLogType;
+use Illuminate\Support\Collection;
 
 class LearningDurationService
 {
-    public function buildActiveIntervals(array $sessionLogs): array
+    public function buildActiveIntervals(iterable $sessionLogs): array
     {
         $intervals = [];
         $currentStart = null;

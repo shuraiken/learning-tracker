@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Services\DashboardService;
 use Illuminate\Http\Request;
 
 class DashboardActivityController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, DashboardService $dashboardService)
     {
-        
+        $data = $dashboardService->getWeeklyActivity();
+
+        return $this->json($data);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\LearningSession;
+use App\Enums\LearningSessionLogType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,6 +17,7 @@ class LearningSessionLog extends Model
 
     protected $casts = [
         'occurred_at' => 'datetime',
+        'type' => LearningSessionLogType::class,
     ];
 
     /**

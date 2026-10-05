@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use App\Models\Learning;
 use App\Models\LearningSession;
+use App\Models\LearningSessionLog;
 
 class DashboardService
 {
@@ -80,7 +82,6 @@ class DashboardService
         //     LearningSession::select('total_duration')->sum('total_duration');
         // )->get();
 
-
         $learnings = Learning::where('user_id', $this->user->id)
             ->whereHas('learningSessions')
             ->withSum('learningSessions', 'total_duration')
@@ -96,5 +97,33 @@ class DashboardService
             ]);
 
         return $learnings->values()->toArray();
+    }
+
+    public function getWeeklyActivity(): array
+    {
+        $startOfWeek = today()->startOfWeek();
+        $endOfWeek = today()->endOfWeek()->addDay()->startOfDay();
+
+        $logs = LearningSessionLog::whereHas('learningSession.learning', function ($query) {
+                $query->where('user_id', $this->user->id);
+            })
+            ->whereBetween('occurred_at', [$startOfWeek, $endOfWeek])
+            ->orderBy('occurred_at')
+            ->get();
+
+        $service = new LearningDurationService();
+        $activeIntervals = $service->buildActiveIntervals($logs);
+
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        $result = [];
+
+        foreach ($days as $index => $day) {
+            $startOfDay = $startOfWeek->copy()->addDays($index);
+            $endOfDay = $startOfDay->copy()->addDay();
+
+            $result[$day] = $service->calculateDuration($activeIntervals, $startOfDay, $endOfDay);
+        }
+
+        return $result;
     }
 }
