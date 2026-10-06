@@ -126,4 +126,24 @@ class DashboardService
 
         return $result;
     }
+
+    public function getRecentSessions(): array
+    {
+        return $this->user->learningSessions()
+            ->with('learning')
+            ->orderByDesc('started_at')
+            ->take(10)
+            ->get()
+            ->map(fn($session) => [
+                'id' => $session->id,
+                'name' => $session->name,
+                'skill' => $session->learning->name,
+                'date' => $session->started_at ? Carbon::parse($session->started_at)->format('M j, Y') : null,
+                'duration' => $session->total_duration,
+                'duration_formatted' => CarbonInterval::seconds($session->total_duration)->cascade()->forHumans(),
+                'status' => $session->status,
+            ])
+            ->values()
+            ->toArray();
+    }
 }

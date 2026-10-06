@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\LearningSessionLogType;
+use App\Enums\LearningSessionStatus;
 use App\Models\Learning;
 use App\Models\LearningSession;
 use App\Models\LearningSessionLog;
@@ -327,6 +328,211 @@ describe('getWeeklyActivity', function() {
             'friday' => 0,
             'saturday' => 0,
             'sunday' => 0,
+]);
+    });
+});
+
+describe('getRecentSessions', function() {
+    it('returns correct array attributes', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $learning = Learning::factory()->for($user)->create();
+        $session = LearningSession::factory()->for($learning)->create([
+            'total_duration' => 3600,
+            'status' => LearningSessionStatus::COMPLETED->value,
         ]);
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        $requiredKeys = ['id', 'skill', 'date', 'duration', 'duration_formatted', 'status'];
+
+        $allExist = array_all($requiredKeys, fn($key) => array_key_exists($key, $result[0]));
+
+        expect($allExist)->toBeBool()->toBe(true);
+    });
+
+    it('limits to 10 sessions', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $learning = Learning::factory()->for($user)->create();
+
+        foreach (range(1, 15) as $i) {
+            LearningSession::factory()->for($learning)->create([
+                'started_at' => now()->subDays($i),
+                'total_duration' => 3600,
+                'status' => LearningSessionStatus::COMPLETED->value,
+            ]);
+        }
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        expect($result)->toHaveCount(10);
+    });
+
+    it('orders by started_at descending', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $learning = Learning::factory()->for($user)->create();
+
+        $dates = [
+            now()->subDays(5),
+            now()->subDays(2),
+            now()->subDays(8),
+            now()->subDays(1),
+            now()->subDays(10),
+        ];
+
+        foreach ($dates as $date) {
+            LearningSession::factory()->for($learning)->create([
+                'started_at' => $date,
+                'total_duration' => 3600,
+                'status' => LearningSessionStatus::COMPLETED->value,
+            ]);
+        }
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        $itemsAreSorted = collect($result)
+            ->sliding(2)
+            ->every(fn($pair) => strtotime($pair->first()['date']) >= strtotime($pair->last()['date']));
+
+        expect($itemsAreSorted)->toBe(true);
+    });
+
+    it('includes in-progress sessions', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $learning = Learning::factory()->for($user)->create();
+
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now()->subDays(1),
+            'total_duration' => 1800,
+            'status' => LearningSessionStatus::ACTIVE->value,
+        ]);
+
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now()->subDays(2),
+            'total_duration' => 3600,
+            'status' => LearningSessionStatus::PAUSED->value,
+        ]);
+
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now()->subDays(3),
+            'total_duration' => 7200,
+            'status' => LearningSessionStatus::COMPLETED->value,
+        ]);
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        $statuses = array_column($result, 'status');
+
+        expect($statuses)->toContain('active');
+        expect($statuses)->toContain('paused');
+        expect($statuses)->toContain('completed');
+    });
+
+    it('excludes other users sessions', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $learning = Learning::factory()->for($user)->create();
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now(),
+            'total_duration' => 3600,
+            'status' => LearningSessionStatus::COMPLETED->value,
+        ]);
+
+        $otherUser = User::factory()->create();
+        $otherLearning = Learning::factory()->for($otherUser)->create();
+        LearningSession::factory()->for($otherLearning)->create([
+            'started_at' => now(),
+            'total_duration' => 7200,
+            'status' => LearningSessionStatus::COMPLETED->value,
+        ]);
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        expect($result)->toHaveCount(1);
+        expect($result[0]['duration'])->toBe(3600);
+    });
+
+    it('returns empty array on empty state', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        expect($result)->toBe([]);
+    });
+
+    it('formats date as M d, Y', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $this->travelTo(Carbon::parse('2026-10-05 10:00:00'));
+
+        $learning = Learning::factory()->for($user)->create();
+        $session = LearningSession::factory()->for($learning)->create([
+            'started_at' => '2026-10-05 10:00:00',
+            'total_duration' => 3600,
+            'status' => LearningSessionStatus::COMPLETED->value,
+        ]);
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        expect($result[0]['date'])->toBe('Oct 5, 2026');
+    });
+
+    it('includes status field with enum values', function() {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $learning = Learning::factory()->for($user)->create();
+
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now()->subDays(1),
+            'total_duration' => 1800,
+            'status' => LearningSessionStatus::ACTIVE->value,
+        ]);
+
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now()->subDays(2),
+            'total_duration' => 3600,
+            'status' => LearningSessionStatus::PAUSED->value,
+        ]);
+
+        LearningSession::factory()->for($learning)->create([
+            'started_at' => now()->subDays(3),
+            'total_duration' => 7200,
+            'status' => LearningSessionStatus::COMPLETED->value,
+        ]);
+
+        $service = new DashboardService();
+
+        $result = $service->getRecentSessions();
+
+        $statuses = array_column($result, 'status');
+
+        expect($statuses)->toContain(LearningSessionStatus::ACTIVE->value);
+        expect($statuses)->toContain(LearningSessionStatus::PAUSED->value);
+        expect($statuses)->toContain(LearningSessionStatus::COMPLETED->value);
     });
 });
