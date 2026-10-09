@@ -7,13 +7,14 @@ use App\Http\Controllers\Api\LearningSessionController;
 use App\Http\Controllers\PauseLearningSessionController;
 use App\Http\Controllers\ResumeLearningSessionController;
 use App\Http\Controllers\EndLearningSessionController;
-use App\Http\Controllers\StopLearningSessionController; 
+use App\Http\Controllers\StopLearningSessionController;
 use App\Http\Controllers\StartLearningSessionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('learning-sessions')->group(function () {
     Route::get('/active', [ActiveLearningSessionController::class, 'index']);
     Route::post('', [LearningSessionController::class, 'store']);
+    Route::delete('/{id}', [LearningSessionController::class, 'destroy']);
     Route::post('/activate-session-and-log', [ActivateLearningSessionAndLogController::class, 'store']);
     Route::post('/{id}/activate', [ActivateLearningSessionController::class, 'store']);
     Route::post('/{id}/pause', [PauseLearningSessionController::class, 'store']);

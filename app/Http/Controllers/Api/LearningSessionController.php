@@ -78,6 +78,8 @@ class LearningSessionController extends Controller
      */
     public function destroy(LearningSession $learningSession)
     {
-        //
+        $learningSession->delete();
+
+        return $this->json([]);
     }
 }
