@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\States\LearningSession\PausedState;
 use App\States\LearningSession\ActiveState;
-use App\States\LearningSession\CompletedState;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Contracts\LearningSessionStateContract;
