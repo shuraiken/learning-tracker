@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type BreadcrumbItem } from '@/types';
-import axios from 'axios';
+import { learnings, masteries, type Learning, type Mastery } from '@/services';
 import { onMounted, reactive } from 'vue';
 
 import DetailedLearning from '@/components/learnings/DetailedLearning.vue';
@@ -33,8 +33,8 @@ const state = reactive({
         column: 'created_at',
         direction: 'desc',
     },
-    learnings: [],
-    masteries: [],
+    learnings: [] as Learning[],
+    masteries: [] as Mastery[],
     selectedMastery: '',
     selectedLearning: '',
 });
@@ -64,11 +64,7 @@ const onDeleteLearning = async () => {
 
 const fetchLearnings = async () => {
     try {
-        const res = await axios.get('/server/learnings', {
-            params: state.learningFilter,
-        });
-
-        state.learnings = res.data.data;
+        state.learnings = await learnings.getLearnings(state.learningFilter);
     } catch (e) {
         console.error(e);
     }
@@ -76,11 +72,9 @@ const fetchLearnings = async () => {
 
 const fetchMasteries = async () => {
     try {
-        const res = await axios.get('/server/masteries', {
-            params: state.masteryFilter,
-        });
+        const paginated = await masteries.getMasteries(state.masteryFilter);
 
-        state.masteries = res.data.data;
+        state.masteries = paginated.data;
     } catch (e) {
         console.error(e);
     }
@@ -88,7 +82,7 @@ const fetchMasteries = async () => {
 
 const addLearning = async () => {
     try {
-        await axios.post('/server/learnings', state.form);
+        await learnings.createLearning(state.form);
 
         state.form = {};
         state.selectedMastery = '';
@@ -102,7 +96,7 @@ const addLearning = async () => {
 
 const addMastery = async (name: string) => {
     try {
-        await axios.post('/server/masteries', { name: name });
+        await masteries.createMastery(name);
         await fetchMasteries();
     } catch (e) {
         console.error(e);

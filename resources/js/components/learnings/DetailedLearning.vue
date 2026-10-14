@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import axios from 'axios';
+import { learnings, type Learning } from '@/services';
 import { useDebounceFn } from '@vueuse/core';
 import { reactive, onMounted, watchEffect } from 'vue';
 import { Trash2, Ellipsis,  } from 'lucide-vue-next'
@@ -33,7 +33,7 @@ const state = reactive({
     isSessionFormOpen: false,
     learning: {
         name: '',
-    },
+    } as Learning,
     learningSession: {
         name: '',
     }
@@ -41,9 +41,7 @@ const state = reactive({
 
 const fetchLearning = async () => {
     try {
-        const res = await axios.get(`/server/learnings/${props.item}`);
-
-        state.learning = res.data.data;
+        state.learning = await learnings.getLearning(props.item);
     } catch (e) {
         console.error(e);
     }
@@ -51,7 +49,7 @@ const fetchLearning = async () => {
 
 const updateLearning = async () => {
     try {
-        await axios.put(`/server/learnings/${props.item}`, state.learning);
+        await learnings.updateLearning(props.item, { name: state.learning.name });
         emits('update:learning');
     } catch (e) {
         console.error(e);
@@ -60,7 +58,7 @@ const updateLearning = async () => {
 
 const deleteLearning = async () => {
     try {
-        await axios.delete(`/server/learnings/${props.item}`);
+        await learnings.deleteLearning(props.item);
         state.isConfirmDeleteOpen = false;
         emits('delete:learning');
     } catch (e) {

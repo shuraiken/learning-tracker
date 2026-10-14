@@ -10,7 +10,6 @@ export function useSessionTimer() {
         isActive,
         getActiveSession: sessionTimerStore.getActiveSession,
         activateSession: sessionTimerStore.activateSession,
-        activateSessionAndLog: sessionTimerStore.activateSessionAndLog,
         pauseSession: sessionTimerStore.pauseSession,
         resumeSession: sessionTimerStore.resumeSession,
         endSession: sessionTimerStore.endSession,
