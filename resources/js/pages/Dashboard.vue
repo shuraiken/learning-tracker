@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import axios from 'axios';
+import { dashboard } from '@/services';
 import { onMounted } from 'vue';
 import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -18,15 +18,44 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const fetchOverviewData = async () => {
     try {
-        const response = await axios.get('/server/dashboard/overview');
-        console.info(response.data);
+        console.info(await dashboard.getOverview());
     } catch (error) {
         console.error(error);
     }
 }
 
-onMounted(() => {
-    fetchOverviewData();
+const fetchSkillBreakdown = async () => {
+    try {
+        console.info('skill breakdown', await dashboard.getSkillBreakdown());
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const fetchWeeklyActivity = async () => {
+    try {
+        console.info('weekly activity', await dashboard.getWeeklyActivity());
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const fetchRecentSessions = async () => {
+    try {
+        console.info('weekly activity', await dashboard.getRecentSessions());
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+onMounted(async () => {
+    // fetchOverviewData();
+    await Promise.all([
+        fetchOverviewData(),
+        fetchSkillBreakdown(),
+        fetchWeeklyActivity(),
+        fetchRecentSessions(),
+    ]);
 });
 </script>
 
