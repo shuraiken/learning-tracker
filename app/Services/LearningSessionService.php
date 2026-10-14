@@ -70,6 +70,12 @@ class LearningSessionService
         return $learningSession;
     }
 
+    public function activateLearningSession(LearningSession $learningSession)
+    {
+        // Status-only: first activation writes no log (unlike resume).
+        $learningSession->state('paused')->activate();
+    }
+
     public function resumeLearningSession(LearningSession $learningSession)
     {
         $now = now();

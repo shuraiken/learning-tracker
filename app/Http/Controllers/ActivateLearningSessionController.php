@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\LearningSession;
+use App\Services\LearningSessionService;
 
 class ActivateLearningSessionController extends Controller
 {
-    public function store(int $id)
+    public function store(int $id, LearningSessionService $learningSessionService)
     {
         try {
-            $session = \App\Models\LearningSession::findOrFail($id);
-            $session->update(['status' => 'active']);
-            return $this->json(['message' => 'Session activated successfully']);
+            $learningSession = LearningSession::findOrFail($id);
+
+            $learningSessionService->activateLearningSession($learningSession);
+
+            return $this->json($learningSession->fresh());
         } catch (\Exception $e) {
             return $this->jsonException($e, "Failed to activate session");
         }
