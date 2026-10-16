@@ -30,12 +30,12 @@ onMounted(async () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 md:p-6">
-            <DashboardHeader :period="period" @update:period="setPeriod" />
+            <DashboardHeader />
             <p v-if="error" role="alert" class="text-sm text-destructive">{{ error }}</p>
             <DashboardOverview :overview="overview" :loading="loading" />
             <div class="grid gap-4 lg:grid-cols-2">
                 <WeeklyActivityChart :weekly-activity="weeklyActivity" :loading="loading" />
-                <SkillBreakdown :skill-breakdown="skillBreakdown" :loading="loading" />
+                <SkillBreakdown :skill-breakdown="skillBreakdown" :loading="loading" :period="period" @update:period="setPeriod" />
             </div>
             <RecentSessions :sessions="recentSessions" :loading="loading" />
         </div>

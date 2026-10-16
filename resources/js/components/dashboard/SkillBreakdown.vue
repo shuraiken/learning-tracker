@@ -1,14 +1,32 @@
 <script setup lang="ts">
 import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { DashboardSkillBreakdown } from '@/services';
+import type { DashboardPeriod } from '@/stores/dashboard';
 import { computed } from 'vue';
 
 const props = defineProps<{
     skillBreakdown: DashboardSkillBreakdown[];
     loading: boolean;
+    period: DashboardPeriod;
 }>();
+
+const emit = defineEmits<{
+    (e: 'update:period', value: DashboardPeriod): void;
+}>();
+
+const options: { value: DashboardPeriod; label: string }[] = [
+    { value: 'today', label: 'Today' },
+    { value: 'week', label: 'This Week' },
+    { value: 'month', label: 'This Month' },
+    { value: 'all', label: 'All Time' },
+];
+
+const select = (value: DashboardPeriod) => {
+    if (value !== props.period) emit('update:period', value);
+};
 
 // Denominator for share-of-period bars (locked: honest proportional widths).
 const total = computed(() => props.skillBreakdown.reduce((sum, skill) => sum + skill.total_duration, 0));
@@ -24,7 +42,25 @@ const visibleSkills = computed(() => props.skillBreakdown.slice(0, MAX_VISIBLE_S
 <template>
     <Card>
         <CardContent class="space-y-4 p-4 md:p-6">
-            <HeadingSmall title="Skill Breakdown" description="Share of learning time for the selected period." />
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <HeadingSmall title="Skill Breakdown" description="Share of learning time for the selected period." />
+                <div
+                    class="flex flex-wrap gap-1 self-start rounded-lg border border-border bg-card p-1 sm:self-auto"
+                    role="group"
+                    aria-label="Period selector"
+                >
+                    <Button
+                        v-for="option in options"
+                        :key="option.value"
+                        size="sm"
+                        :variant="option.value === period ? 'secondary' : 'ghost'"
+                        :aria-pressed="option.value === period"
+                        @click="select(option.value)"
+                    >
+                        {{ option.label }}
+                    </Button>
+                </div>
+            </div>
             <template v-if="loading">
                 <div v-for="n in 4" :key="n" class="space-y-2">
                     <div class="flex justify-between">
