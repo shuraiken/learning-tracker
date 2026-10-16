@@ -22,51 +22,51 @@ use Carbon\Carbon;
 //     $response->assertStatus(200);
 // });
 
-describe('getSkillBreakdown', function() {
-    it('returns correct array attributes', function() {
+describe('getSkillBreakdown', function () {
+    it('returns correct array attributes', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $learning = Learning::factory()->for($user)->create();
         $session = LearningSession::factory()->for($learning)->create(['total_duration' => 3600]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getSkillBreakdown();
 
         $requiredKeys = ['id', 'name', 'total_duration', 'duration_formatted'];
 
-        $allExist = array_all($requiredKeys, fn($key) => array_key_exists($key, $result[0]));
+        $allExist = array_all($requiredKeys, fn ($key) => array_key_exists($key, $result[0]));
 
         expect($allExist)->toBeBool()->toBe(true);
     });
 
-    it('returns accurate duration', function() {
+    it('returns accurate duration', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $learning = Learning::factory()->for($user)->create();
         $session = LearningSession::factory()->for($learning)->create(['total_duration' => 3600]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getSkillBreakdown();
 
         expect($result[0]['total_duration'])->toBeInt()->toBe(3600);
     });
 
-    it('returns accurate formatted duration', function() {
+    it('returns accurate formatted duration', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $learnings = Learning::factory()->for($user)->create();
         $sessions = LearningSession::factory()->for($learnings)->createMany([
-            [ 'total_duration' => 3600 ],
-            [ 'total_duration' => 3900 ],
-            [ 'total_duration' => 3950 ],
+            ['total_duration' => 3600],
+            ['total_duration' => 3900],
+            ['total_duration' => 3950],
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
         $result = $service->getSkillBreakdown();
 
         // expect($result[0]['duration_formatted'])->toBe('1 hour');
@@ -74,29 +74,29 @@ describe('getSkillBreakdown', function() {
         expect($result[0]['duration_formatted'])->toBe('3 hours 10 minutes 50 seconds');
     });
 
-    it('orders duration in descending order', function() {
+    it('orders duration in descending order', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $durations = [ 6000, 5000, 4000, 3000, 2000, 1000 ];
+        $durations = [6000, 5000, 4000, 3000, 2000, 1000];
 
         foreach ($durations as $duration) {
             $learning = Learning::factory()->for($user)->create();
             LearningSession::factory()->for($learning)->create(['total_duration' => $duration]);
         }
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getSkillBreakdown();
 
         $itemsAreSorted = collect($result)
             ->sliding(2)
-            ->every(fn($pair) => $pair->first()['total_duration'] >= $pair->last()['total_duration']);
+            ->every(fn ($pair) => $pair->first()['total_duration'] >= $pair->last()['total_duration']);
 
         expect($itemsAreSorted)->toBe(true);
     });
 
-    it('excludes learnings with no sessions', function() {
+    it('excludes learnings with no sessions', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -105,7 +105,7 @@ describe('getSkillBreakdown', function() {
 
         $learningWithoutSessions = Learning::factory()->for($user)->create();
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getSkillBreakdown();
 
@@ -113,11 +113,11 @@ describe('getSkillBreakdown', function() {
         expect(array_column($result, 'id'))->not->toContain($learningWithoutSessions->id);
     });
 
-    it('returns empty array on empty state', function() {
+    it('returns empty array on empty state', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getSkillBreakdown();
 
@@ -125,18 +125,18 @@ describe('getSkillBreakdown', function() {
     });
 });
 
-describe('getWeeklyActivity', function() {
+describe('getWeeklyActivity', function () {
     // Pins "now" to Wednesday 2026-09-30 so the current week is always
     // Mon 2026-09-28 .. Sun 2026-10-04, no matter when the tests run.
-    beforeEach(function() {
+    beforeEach(function () {
         $this->travelTo(Carbon::parse('2026-09-30 12:00:00'));
     });
 
-    it('returns all seven days with zero when there is no activity', function() {
+    it('returns all seven days with zero when there is no activity', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getWeeklyActivity();
 
@@ -151,7 +151,7 @@ describe('getWeeklyActivity', function() {
         ]);
     });
 
-    it('attributes session time to the correct day', function() {
+    it('attributes session time to the correct day', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -172,7 +172,7 @@ describe('getWeeklyActivity', function() {
             'occurred_at' => '2026-09-30 10:30:00',
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getWeeklyActivity();
 
@@ -187,7 +187,7 @@ describe('getWeeklyActivity', function() {
         ]);
     });
 
-    it('splits a session that crosses midnight across two days', function() {
+    it('splits a session that crosses midnight across two days', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -208,7 +208,7 @@ describe('getWeeklyActivity', function() {
             'occurred_at' => '2026-09-29 01:00:00',
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getWeeklyActivity();
 
@@ -225,7 +225,7 @@ describe('getWeeklyActivity', function() {
         ]);
     });
 
-    it('excludes sessions outside the current week', function() {
+    it('excludes sessions outside the current week', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -246,7 +246,7 @@ describe('getWeeklyActivity', function() {
             'occurred_at' => '2026-09-21 11:00:00',
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getWeeklyActivity();
 
@@ -261,7 +261,7 @@ describe('getWeeklyActivity', function() {
         ]);
     });
 
-    it('excludes other users activity', function() {
+    it('excludes other users activity', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -283,7 +283,7 @@ describe('getWeeklyActivity', function() {
             'occurred_at' => '2026-09-30 10:00:00',
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getWeeklyActivity();
 
@@ -298,7 +298,7 @@ describe('getWeeklyActivity', function() {
         ]);
     });
 
-    it('returns zero for an in-progress session', function() {
+    it('returns zero for an in-progress session', function () {
         // KNOWN LIMITATION: a dangling START (no PAUSE/STOP yet) counts as 0.
         // Tracked as Post-MVP: "Dashboard: count in-progress session time".
         $user = User::factory()->create();
@@ -316,7 +316,7 @@ describe('getWeeklyActivity', function() {
             'occurred_at' => '2026-09-30 09:00:00',
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getWeeklyActivity();
 
@@ -328,12 +328,12 @@ describe('getWeeklyActivity', function() {
             'friday' => 0,
             'saturday' => 0,
             'sunday' => 0,
-]);
+        ]);
     });
 });
 
-describe('getRecentSessions', function() {
-    it('returns correct array attributes', function() {
+describe('getRecentSessions', function () {
+    it('returns correct array attributes', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -343,18 +343,18 @@ describe('getRecentSessions', function() {
             'status' => LearningSessionStatus::COMPLETED->value,
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
         $requiredKeys = ['id', 'skill', 'date', 'duration', 'duration_formatted', 'status'];
 
-        $allExist = array_all($requiredKeys, fn($key) => array_key_exists($key, $result[0]));
+        $allExist = array_all($requiredKeys, fn ($key) => array_key_exists($key, $result[0]));
 
         expect($allExist)->toBeBool()->toBe(true);
     });
 
-    it('limits to 10 sessions', function() {
+    it('limits to 10 sessions', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -368,14 +368,14 @@ describe('getRecentSessions', function() {
             ]);
         }
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
         expect($result)->toHaveCount(10);
     });
 
-    it('orders by started_at descending', function() {
+    it('orders by started_at descending', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -397,18 +397,18 @@ describe('getRecentSessions', function() {
             ]);
         }
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
         $itemsAreSorted = collect($result)
             ->sliding(2)
-            ->every(fn($pair) => strtotime($pair->first()['date']) >= strtotime($pair->last()['date']));
+            ->every(fn ($pair) => strtotime($pair->first()['date']) >= strtotime($pair->last()['date']));
 
         expect($itemsAreSorted)->toBe(true);
     });
 
-    it('includes in-progress sessions', function() {
+    it('includes in-progress sessions', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -432,7 +432,7 @@ describe('getRecentSessions', function() {
             'status' => LearningSessionStatus::COMPLETED->value,
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
@@ -443,7 +443,7 @@ describe('getRecentSessions', function() {
         expect($statuses)->toContain('completed');
     });
 
-    it('excludes other users sessions', function() {
+    it('excludes other users sessions', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -462,7 +462,7 @@ describe('getRecentSessions', function() {
             'status' => LearningSessionStatus::COMPLETED->value,
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
@@ -470,18 +470,18 @@ describe('getRecentSessions', function() {
         expect($result[0]['duration'])->toBe(3600);
     });
 
-    it('returns empty array on empty state', function() {
+    it('returns empty array on empty state', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
         expect($result)->toBe([]);
     });
 
-    it('formats date as M d, Y', function() {
+    it('formats date as M d, Y', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -494,14 +494,14 @@ describe('getRecentSessions', function() {
             'status' => LearningSessionStatus::COMPLETED->value,
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 
         expect($result[0]['date'])->toBe('Oct 5, 2026');
     });
 
-    it('includes status field with enum values', function() {
+    it('includes status field with enum values', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -525,7 +525,7 @@ describe('getRecentSessions', function() {
             'status' => LearningSessionStatus::COMPLETED->value,
         ]);
 
-        $service = new DashboardService();
+        $service = new DashboardService;
 
         $result = $service->getRecentSessions();
 

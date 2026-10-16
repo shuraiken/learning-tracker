@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
-use Carbon\CarbonInterval;
 use App\Models\Learning;
 use App\Models\LearningSession;
 use App\Models\LearningSessionLog;
+use Carbon\Carbon;
+use Carbon\CarbonInterval;
 
 class DashboardService
 {
@@ -30,9 +30,9 @@ class DashboardService
     public function getOverviewTimeSummary(): array
     {
         $totalTime = $this->user->learningSessions()->sum('total_duration');
-        $timeFormatted = CarbonInterval::seconds($totalTime)->forHumans();
+        $timeFormatted = CarbonInterval::seconds($totalTime)->forHumans(['short' => true]);
         // $averageTime = $totalTime / $totalLearnings;
-        // $averageTimeFormatted = CarbonInterval::seconds($averageTime)->forHumans();
+        // $averageTimeFormatted = CarbonInterval::seconds($averageTime)->forHumans(['short' => true]);
 
         return [
             'totalTime' => $totalTime,
@@ -54,7 +54,7 @@ class DashboardService
 
         $totalTimeToday = $this->user->learningSessions()->whereDate('learning_sessions.created_at', today())->sum('total_duration');
 
-        $timeFormatted = CarbonInterval::seconds($totalTimeToday)->forHumans();
+        $timeFormatted = CarbonInterval::seconds($totalTimeToday)->forHumans(['short' => true]);
 
         return [
             'totalTimeToday' => $totalTimeToday,
@@ -68,7 +68,7 @@ class DashboardService
         $periodEnd = today()->endOfWeek()->addDay()->startOfDay();
 
         $totalTimeThisWeek = $this->user->learningSessions()->whereDate('learning_sessions.created_at', '>=', today()->startOfWeek())->sum('total_duration');
-        $timeFormatted = CarbonInterval::seconds($totalTimeThisWeek)->forHumans();
+        $timeFormatted = CarbonInterval::seconds($totalTimeThisWeek)->forHumans(['short' => true]);
 
         return [
             'totalTimeThisWeek' => $totalTimeThisWeek,
@@ -87,13 +87,13 @@ class DashboardService
             ->withSum('learningSessions', 'total_duration')
             ->orderByDesc('learning_sessions_sum_total_duration')
             ->get()
-            ->map(fn($learning) => [
+            ->map(fn ($learning) => [
                 'id' => $learning->id,
                 'name' => $learning->name,
                 'total_duration' => (int) $learning->learning_sessions_sum_total_duration,
                 'duration_formatted' => CarbonInterval::seconds(
                     $learning->learning_sessions_sum_total_duration
-                )->cascade()->forHumans(),
+                )->cascade()->forHumans(['short' => true]),
             ]);
 
         return $learnings->values()->toArray();
@@ -105,13 +105,13 @@ class DashboardService
         $endOfWeek = today()->endOfWeek()->addDay()->startOfDay();
 
         $logs = LearningSessionLog::whereHas('learningSession.learning', function ($query) {
-                $query->where('user_id', $this->user->id);
-            })
+            $query->where('user_id', $this->user->id);
+        })
             ->whereBetween('occurred_at', [$startOfWeek, $endOfWeek])
             ->orderBy('occurred_at')
             ->get();
 
-        $service = new LearningDurationService();
+        $service = new LearningDurationService;
         $activeIntervals = $service->buildActiveIntervals($logs);
 
         $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -134,13 +134,13 @@ class DashboardService
             ->orderByDesc('started_at')
             ->take(10)
             ->get()
-            ->map(fn($session) => [
+            ->map(fn ($session) => [
                 'id' => $session->id,
                 'name' => $session->name,
                 'skill' => $session->learning->name,
                 'date' => $session->started_at ? Carbon::parse($session->started_at)->format('M j, Y') : null,
                 'duration' => $session->total_duration,
-                'duration_formatted' => CarbonInterval::seconds($session->total_duration)->cascade()->forHumans(),
+                'duration_formatted' => CarbonInterval::seconds($session->total_duration)->cascade()->forHumans(['short' => true]),
                 'status' => $session->status,
             ])
             ->values()
