@@ -1,8 +1,8 @@
 export interface ApiError {
-    status: number
-    message: string
-    errors?: Record<string, string[]>
-    original?: unknown
+    status: number;
+    message: string;
+    errors?: Record<string, string[]>;
+    original?: unknown;
 }
 
 export function isApiError(e: unknown): e is ApiError {

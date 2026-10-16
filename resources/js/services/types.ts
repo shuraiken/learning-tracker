@@ -12,17 +12,17 @@ export enum LearningSessionStatus {
 }
 
 export type ApiResponse<T> = {
-    data: T
-    message?: string
-}
+    data: T;
+    message?: string;
+};
 
 export type PaginatedResponse<T> = {
-    data: T[]
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-}
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+};
 
 export type Learning = {
     id: number;
@@ -31,12 +31,12 @@ export type Learning = {
     mastery_id?: number;
     group_id?: number;
     mastery?: Pick<Mastery, 'id' | 'name'>;
-}
+};
 
 export type Mastery = {
     id: number;
     name: string;
-}
+};
 
 export type LearningFilterParams = {
     search?: string;
@@ -47,14 +47,14 @@ export type LearningFilterParams = {
     direction?: string;
     limit?: number;
     page?: number;
-}
+};
 
 export type MasteryFilterParams = {
     search?: string;
     sort?: unknown;
     limit?: number;
     page?: number;
-}
+};
 
 export type LearningSession = {
     id: number;
@@ -68,21 +68,21 @@ export type LearningSession = {
     latest_log?: LearningSessionLog;
     created_at?: Date;
     updated_at?: Date;
-}
+};
 
 export type RawSession = Omit<LearningSession, 'started_at' | 'ended_at' | 'created_at' | 'updated_at' | 'latest_log'> & {
-    started_at: string,
-    ended_at?: string,
-    created_at?: string,
-    updated_at?: string,
-    latest_log?: RawSessionLog,
-}
+    started_at: string;
+    ended_at?: string;
+    created_at?: string;
+    updated_at?: string;
+    latest_log?: RawSessionLog;
+};
 
 export type RawSessionLog = Omit<LearningSessionLog, 'occurred_at' | 'created_at' | 'updated_at'> & {
-    occurred_at: string,
-    created_at?: string,
-    updated_at?: string,
-}
+    occurred_at: string;
+    created_at?: string;
+    updated_at?: string;
+};
 
 export type LearningSessionLog = {
     id: number;
@@ -91,21 +91,21 @@ export type LearningSessionLog = {
     occurred_at: Date;
     created_at?: Date;
     updated_at?: Date;
-}
+};
 
 export type DashboardOverview = {
     totalLearnings: number;
     totalTime: number;
     today: number;
     thisWeek: number;
-}
+};
 
 export type DashboardSkillBreakdown = {
     id: number;
     name: string;
     total_duration: number;
     duration_formatted: string;
-}
+};
 
 export type DashboardWeeklyActivity = {
     monday: number;
@@ -115,7 +115,7 @@ export type DashboardWeeklyActivity = {
     friday: number;
     saturday: number;
     sunday: number;
-}
+};
 
 export type DashboardRecentSession = {
     id: number;
@@ -125,4 +125,4 @@ export type DashboardRecentSession = {
     duration: number;
     duration_formatted: string;
     status: LearningSessionStatus;
-}
+};

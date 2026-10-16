@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { dashboard } from '@/services';
-import { onMounted } from 'vue';
-import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
+import DashboardHeader from '@/components/dashboard/DashboardHeader.vue';
+import DashboardOverview from '@/components/dashboard/DashboardOverview.vue';
+import RecentSessions from '@/components/dashboard/RecentSessions.vue';
+import SkillBreakdown from '@/components/dashboard/SkillBreakdown.vue';
+import WeeklyActivityChart from '@/components/dashboard/WeeklyActivityChart.vue';
+import { useDashboard } from '@/composables/useDashboard';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-
-import { DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { onMounted } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,46 +17,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const fetchOverviewData = async () => {
-    try {
-        console.info(await dashboard.getOverview());
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-const fetchSkillBreakdown = async () => {
-    try {
-        console.info('skill breakdown', await dashboard.getSkillBreakdown());
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-const fetchWeeklyActivity = async () => {
-    try {
-        console.info('weekly activity', await dashboard.getWeeklyActivity());
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-const fetchRecentSessions = async () => {
-    try {
-        console.info('weekly activity', await dashboard.getRecentSessions());
-    } catch (error) {
-        console.error(error);
-    }
-}
+// Data flows through the store via composable (docs/data-flow.md).
+const { overview, skillBreakdown, weeklyActivity, recentSessions, loading, error, period, fetchAll, setPeriod } = useDashboard();
 
 onMounted(async () => {
-    // fetchOverviewData();
-    await Promise.all([
-        fetchOverviewData(),
-        fetchSkillBreakdown(),
-        fetchWeeklyActivity(),
-        fetchRecentSessions(),
-    ]);
+    await fetchAll();
 });
 </script>
 
@@ -63,39 +29,15 @@ onMounted(async () => {
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <!-- <Drawer>
-                <DrawerTrigger class="w-32 rounded-lg border border-gray-800 px-2.5 py-1 text-center font-semibold">New Learning</DrawerTrigger>
-
-                <DrawerContent class="fixed top-0 right-0">
-                    <div class="flex justify-between">
-                        <DrawerHeader>
-                            <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-                            <DrawerDescription>This action cannot be undone.</DrawerDescription>
-                        </DrawerHeader>
-                        <DrawerClose>
-                            <Button variant="outline"> Cancel </Button>
-                        </DrawerClose>
-                    </div>
-                    <DrawerFooter>
-                        <Button>Submit</Button>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer> -->
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 md:p-6">
+            <DashboardHeader :period="period" @update:period="setPeriod" />
+            <p v-if="error" role="alert" class="text-sm text-destructive">{{ error }}</p>
+            <DashboardOverview :overview="overview" :loading="loading" />
+            <div class="grid gap-4 lg:grid-cols-2">
+                <WeeklyActivityChart :weekly-activity="weeklyActivity" :loading="loading" />
+                <SkillBreakdown :skill-breakdown="skillBreakdown" :loading="loading" />
             </div>
-            <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                <PlaceholderPattern />
-            </div>
+            <RecentSessions :sessions="recentSessions" :loading="loading" />
         </div>
     </AppLayout>
 </template>
