@@ -1,6 +1,6 @@
+import { learningSessions, type LearningSession } from '@/services';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { learningSessions, type LearningSession } from '@/services';
 
 const useSessionTimerStore = defineStore('session-timer', () => {
     const activeLearningSession = ref<LearningSession | null>(null);

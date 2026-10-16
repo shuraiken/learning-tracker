@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
 import { learningSessions, type CreateLearningSession } from '@/services';
+import { defineStore } from 'pinia';
 import useSessionTimerStore from './session-timer';
 
 export const useLearningSessionStore = defineStore('learning-session', () => {
@@ -13,7 +13,7 @@ export const useLearningSessionStore = defineStore('learning-session', () => {
         const { session } = await learningSessions.createSessionAndLog(learningSession);
 
         sessionTimerStore.activeLearningSession = session;
-    }
+    };
 
     const deleteLearningSession = async (id: number) => {
         await learningSessions.destroySession(id);

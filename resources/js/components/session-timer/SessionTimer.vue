@@ -78,7 +78,14 @@ onUnmounted(() => {
         </template>
 
         <div class="flex items-center gap-2">
-            <button v-if="showPlayAndStop" type="button" @click="onPlay" class="session-timer-control-button cursor-pointer rounded-lg border border-white">Resume</button>
+            <button
+                v-if="showPlayAndStop"
+                type="button"
+                @click="onPlay"
+                class="session-timer-control-button cursor-pointer rounded-lg border border-white"
+            >
+                Resume
+            </button>
 
             <template v-if="showPause">
                 <button type="button" @click="onPause" class="session-timer-control-button cursor-pointer rounded-lg border border-white">
@@ -87,21 +94,23 @@ onUnmounted(() => {
             </template>
 
             <template v-if="showPause || showPlayAndStop">
-                <button type="button" @click="onStop" class="session-timer-control-button cursor-pointer rounded-lg border border-white">
-                    Stop
-                </button>
-                <button type="button" @click="onEnd" class="session-timer-control-button cursor-pointer rounded-lg border border-white">
-                    End
-                </button>
+                <button type="button" @click="onStop" class="session-timer-control-button cursor-pointer rounded-lg border border-white">Stop</button>
+                <button type="button" @click="onEnd" class="session-timer-control-button cursor-pointer rounded-lg border border-white">End</button>
             </template>
 
-            <button v-if="showStart" type="button" @click="onStart" class="session-timer-control-button cursor-pointer rounded-lg border border-white">Start</button>
+            <button
+                v-if="showStart"
+                type="button"
+                @click="onStart"
+                class="session-timer-control-button cursor-pointer rounded-lg border border-white"
+            >
+                Start
+            </button>
         </div>
     </div>
 </template>
 
 <style scoped>
-
 .session-timer-control-button {
     padding-inline: 16px;
     padding-block: 4px;

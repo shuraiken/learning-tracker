@@ -1,6 +1,3 @@
-<script setup>
-import { ref, reactive, computed } from "vue";
-</script>
+<script setup></script>
 
-<template>
-</template>
+<template></template>
